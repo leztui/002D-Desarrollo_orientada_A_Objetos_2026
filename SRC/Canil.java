@@ -1,41 +1,31 @@
 package SRC;
-
 public class Canil {
   
     public static void main(String[] args) {
-     Perro perro_de_camilo = new Perro();
-
-    Perro perro_de_alexander = new Perro();
-
-    Perro perro_de_rogelio = new Perro();
+     Perro perro_de_martin = new Perro();
         
-    perro_de_camilo.nombre = "porki";
-    perro_de_camilo.edad = 5;
-    perro_de_camilo.raza = "Quiltro";
-    perro_de_camilo.peso = 40.5;
-    perro_de_camilo.vacunado = true;
+    perro_de_martin.nombre = "porki";
+    perro_de_martin.edad = 5;
+    perro_de_martin.raza = "Quiltro";
+    perro_de_martin.peso = 40.5;
+    perro_de_martin.vacunado = true;
 
-    perro_de_alexander.nombre = "sasha";
-    perro_de_alexander.edad = 2;
-    perro_de_alexander.raza = "Pastor Aleman";
-    perro_de_alexander.peso = 35;
-    perro_de_alexander.vacunado = true;
-
-    perro_de_rogelio.nombre = "Almendra";
-    perro_de_rogelio.edad = 4;
-    perro_de_rogelio.raza = "Quiltro";
-    perro_de_rogelio.peso = 15;
-    perro_de_rogelio.vacunado = true;
-
-    System.out.println("Los siguiente animales han ingresado al canil");
-
-    System.out.println(perro_de_alexander );
-    System.out.println(perro_de_rogelio );
-    String ladrido = perro_de_rogelio.ladrar();
-    System.out.println(ladrido);
-    System.out.println(perro_de_camilo );
+    if (perro_de_martin.edad > 2) {
+     System.out.println("Tiene mas de 2 años ");
+    }else{
+        System.out.println("No tiene mas de dos años");
+    }
+    if (perro_de_martin.peso > 20 ) {
+        System.out.println("Su perro esta flaquito, su perro pesa" + perro_de_martin.peso);
+    }else{
+        System.out.println("Su perro esta gordito su perro pesa" + perro_de_martin.peso);
+    }
+    if(perro_de_martin.vacunado = true)
+    System.out.println("Su perro puede entrar al canil");
+    else{
+    System.out.println("Su perro no puede entrar al canil");
     }
 
-    
 
+    }
 }
