@@ -1,26 +1,43 @@
-
 public class Character {
     String name;
-    private int Hit_Point;
-    int Magic_Points;
+    private int hit_points;
+    int magic_points;
     boolean is_ally;
+    private int age;
 
 
-    public void asignar_vida(int Hit_Point){
-        if (Hit_Point< 0) {
-            this.Hit_Point = 0;
+    public void validarEdad(int age){
+        if (age < 0){
+            System.out.println("Dado que le asignaste una edad negativa, el programa la dejo en 0");
+            this.age = 0;
         }else{
-            this.Hit_Point = Hit_Point;
-
+            this.age = age;
         }
-
-
-
-
     }
-    public int mostrarvida(
-
-    ){return Hit_Point;
-
+    //MUestre la edad
+    public int mostrarEdad(){
+        return this.age ;
     }
+
+    public void asignarVida(int hit_points){
+        if (hit_points < 0) {
+            this.hit_points = 0;
+        }else{
+            this.hit_points = hit_points;
+        }
+    }
+
+    public int mostrarVida(){
+        return this.hit_points;
+    }
+public void asignarNombre(String inputName) {
+        String[] garabatos = {"pinochet", "macaco", "faggot"}; 
+        String nombreLimpio = inputName;
+        for (String garabato : garabatos) {
+            nombreLimpio = nombreLimpio.replaceAll("(?i)" + garabato, "***");
+        }
+        
+        this.name = nombreLimpio;
+    }
+
 }
