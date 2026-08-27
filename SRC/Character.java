@@ -5,39 +5,66 @@ public class Character {
     boolean is_ally;
     private int age;
 
-    // Métodos para el Nombre
-    public void AsignarNombre(String inputName) {
-        String[] garabatos = {"pinochet", "macaco", "faggot"}; 
-        String nombreLimpio = inputName;
-        for (String garabato : garabatos) {
-            nombreLimpio = nombreLimpio.replaceAll("(?i)" + garabato, "***");
+
+
+   public void validarPuntosMagicos(int pmRecibidos){
+    if (pmRecibidos < 0) {
+        System.out.println("LOS PM NO PUEDEN QUEDAR NEGATIOS");
+        
+    }else{
+        this.magic_points = pmRecibidos;
+    }
+       
+    }
+
+
+    public int mostrarPM(){
+        return this.magic_points;
+    }
+
+    public void validarNombre(String name) {
+        name = name.toUpperCase();
+        switch (name) {
+            case "WEON":
+                System.out.println("Nombre no valido");
+                break;
+            case "SOPENCO":
+                System.out.println("Nombre no valido");
+
+                break;
+            case "SOPENKO":
+                System.out.println("Nombre no valido");
+
+                break;
+            case "ESTUPIDO":
+                System.out.println("Nombre no valido");
+
+                break;
+
+            default:
+                this.name = name;
+                break;
         }
-        this.name = nombreLimpio;
     }
 
-    public void ValidarNombre(String name_character) {
-        this.name = name_character;
-    }
-
-    public String ShowName() {
+    public String mostrarNombre() {
         return this.name;
     }
 
-    // Métodos para la Edad
     public void validarEdad(int age) {
         if (age < 0) {
-            System.out.println("Dado que le asignaste una edad negativa, el programa la dejó en 0");
+            System.out.println("Dado que le asignaste una edad negativa, el programa la dejo en 0");
             this.age = 0;
         } else {
             this.age = age;
         }
     }
 
+    // MUestre la edad
     public int mostrarEdad() {
         return this.age;
     }
 
-    // Métodos para la Vida (HP)
     public void asignarVida(int hit_points) {
         if (hit_points < 0) {
             this.hit_points = 0;
@@ -50,16 +77,4 @@ public class Character {
         return this.hit_points;
     }
 
-    // Métodos para el Maná (Magic Points)
-    public void asignarMana(int magic_points) {
-        if (magic_points < 0) {
-            this.magic_points = 0;
-        } else {
-            this.magic_points = magic_points;
-        }
-    }
-
-    public int mostrarMana() {
-        return this.magic_points;
-    }
 }
