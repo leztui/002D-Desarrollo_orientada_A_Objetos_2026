@@ -347,11 +347,11 @@ public class Tienda {
     System.out.println("Ingrese la inicial o parte del nombre del producto a buscar:");
     String busqueda = sc.nextLine().toLowerCase().replace("é", "e");
     
-    // 1. Listas temporales para guardar las coincidencias
+    
     ArrayList<ProductoFisico> matchesFisicos = new ArrayList<>();
     ArrayList<ProductoDigital> matchesDigitales = new ArrayList<>();
 
-    // 2. Buscar en físicos y guardar coincidencias
+   
     for (ProductoFisico juego : coleccion_juegos_fisicos) {
       String nombreJuego = juego.getNombre().toLowerCase().replace("é", "e");
       if (nombreJuego.contains(busqueda)) {
@@ -359,7 +359,7 @@ public class Tienda {
       }
     }
 
-    // 3. Buscar en digitales y guardar coincidencias
+   
     for (ProductoDigital juego : coleccion_juegos_digitales) {
       String nombreJuego = juego.getNombre().toLowerCase().replace("é", "e");
       if (nombreJuego.contains(busqueda)) {
