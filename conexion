@@ -1,0 +1,24 @@
+package com.hachimakidev.fitzone.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class ConexionDB {
+
+    private static final String URL_CONEXION = "jdbc:oracle:thin:@localhost:1521:ORCL";
+    private static final String USUARIO_BASE_DATOS = "usuario_desarrollador";
+    private static final String CONTRASENA_BASE_DATOS = "123456";
+
+    public static Connection obtenerConexion() throws SQLException {
+        return DriverManager.getConnection(URL_CONEXION, USUARIO_BASE_DATOS, CONTRASENA_BASE_DATOS);
+    }
+
+    public static void main(String[] args) {
+        try (Connection conexionPrueba = obtenerConexion()) {
+            System.out.println("Conexión exitosa a Oracle.");
+        } catch (SQLException excepcionSql) {
+            System.out.println("Error al conectar: " + excepcionSql.getMessage());
+        }
+    }
+}
