@@ -1,0 +1,126 @@
+package com.hachimakidev.fitzone.dao;
+
+import com.hachimakidev.fitzone.database.ConexionDB;
+import com.hachimakidev.fitzone.model.PlanEstandar;
+import com.hachimakidev.fitzone.model.PlanMembresia;
+import com.hachimakidev.fitzone.model.PlanPersonalizado;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PlanDAO {
+
+    public List<PlanMembresia> listarTodosLosPlanes() throws SQLException {
+        List<PlanMembresia> listaPlanesMembresia = new ArrayList<>();
+        String consultaSql = "SELECT id, tipo, nombre_cliente, precio_base, duracion_meses, "
+                + "clases_semanales, acceso_piscina, sesiones_entrenador, recargo_entrenador "
+                + "FROM planes_membresia ORDER BY id ASC";
+
+        try (Connection conexionBaseDatos = ConexionDB.obtenerConexion();
+             PreparedStatement sentenciaPreparada = conexionBaseDatos.prepareStatement(consultaSql);
+             ResultSet resultadoConsulta = sentenciaPreparada.executeQuery()) {
+
+            while (resultadoConsulta.next()) {
+                int idPlan = resultadoConsulta.getInt("id");
+                String tipoPlan = resultadoConsulta.getString("tipo");
+                String nombreCliente = resultadoConsulta.getString("nombre_cliente");
+                int precioBase = resultadoConsulta.getInt("precio_base");
+                int duracionMeses = resultadoConsulta.getInt("duracion_meses");
+
+                if ("ESTANDAR".equalsIgnoreCase(tipoPlan)) {
+                    int clasesSemanales = resultadoConsulta.getInt("clases_semanales");
+                    boolean accesoPiscina = "S".equalsIgnoreCase(resultadoConsulta.getString("acceso_piscina"));
+                    listaPlanesMembresia.add(new PlanEstandar(
+                            idPlan, nombreCliente, precioBase, duracionMeses, clasesSemanales, accesoPiscina
+                    ));
+                } else if ("PERSONALIZADO".equalsIgnoreCase(tipoPlan)) {
+                    int sesionesEntrenador = resultadoConsulta.getInt("sesiones_entrenador");
+                    int recargoEntrenador = resultadoConsulta.getInt("recargo_entrenador");
+                    listaPlanesMembresia.add(new PlanPersonalizado(
+                            idPlan, nombreCliente, precioBase, duracionMeses, sesionesEntrenador, recargoEntrenador
+                    ));
+                }
+            }
+        }
+
+        return listaPlanesMembresia;
+    }
+
+    public boolean insertarPlan(PlanMembresia planMembresia) throws SQLException {
+        String sentenciaSql = "INSERT INTO planes_membresia "
+                + "(tipo, nombre_cliente, precio_base, duracion_meses, clases_semanales, "
+                + "acceso_piscina, sesiones_entrenador, recargo_entrenador) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection conexionBaseDatos = ConexionDB.obtenerConexion();
+             PreparedStatement sentenciaPreparada = conexionBaseDatos.prepareStatement(sentenciaSql)) {
+
+            sentenciaPreparada.setString(1, planMembresia.getTipo());
+            sentenciaPreparada.setString(2, planMembresia.getNombreCliente());
+            sentenciaPreparada.setInt(3, planMembresia.getPrecioBase());
+            sentenciaPreparada.setInt(4, planMembresia.getDuracionMeses());
+
+            if (planMembresia instanceof PlanEstandar planEstandar) {
+                sentenciaPreparada.setInt(5, planEstandar.getClasesSemanales());
+                sentenciaPreparada.setString(6, planEstandar.isAccesoPiscina() ? "S" : "N");
+                sentenciaPreparada.setNull(7, Types.INTEGER);
+                sentenciaPreparada.setNull(8, Types.INTEGER);
+            } else if (planMembresia instanceof PlanPersonalizado planPersonalizado) {
+                sentenciaPreparada.setNull(5, Types.INTEGER);
+                sentenciaPreparada.setNull(6, Types.CHAR);
+                sentenciaPreparada.setInt(7, planPersonalizado.getSesionesEntrenador());
+                sentenciaPreparada.setInt(8, planPersonalizado.getRecargoEntrenador());
+            }
+
+            return sentenciaPreparada.executeUpdate() > 0;
+        }
+    }
+
+    public boolean actualizarPlan(PlanMembresia planMembresia) throws SQLException {
+        String sentenciaSql = "UPDATE planes_membresia SET "
+                + "tipo = ?, nombre_cliente = ?, precio_base = ?, duracion_meses = ?, "
+                + "clases_semanales = ?, acceso_piscina = ?, sesiones_entrenador = ?, recargo_entrenador = ? "
+                + "WHERE id = ?";
+
+        try (Connection conexionBaseDatos = ConexionDB.obtenerConexion();
+             PreparedStatement sentenciaPreparada = conexionBaseDatos.prepareStatement(sentenciaSql)) {
+
+            sentenciaPreparada.setString(1, planMembresia.getTipo());
+            sentenciaPreparada.setString(2, planMembresia.getNombreCliente());
+            sentenciaPreparada.setInt(3, planMembresia.getPrecioBase());
+            sentenciaPreparada.setInt(4, planMembresia.getDuracionMeses());
+
+            if (planMembresia instanceof PlanEstandar planEstandar) {
+                sentenciaPreparada.setInt(5, planEstandar.getClasesSemanales());
+                sentenciaPreparada.setString(6, planEstandar.isAccesoPiscina() ? "S" : "N");
+                sentenciaPreparada.setNull(7, Types.INTEGER);
+                sentenciaPreparada.setNull(8, Types.INTEGER);
+            } else if (planMembresia instanceof PlanPersonalizado planPersonalizado) {
+                sentenciaPreparada.setNull(5, Types.INTEGER);
+                sentenciaPreparada.setNull(6, Types.CHAR);
+                sentenciaPreparada.setInt(7, planPersonalizado.getSesionesEntrenador());
+                sentenciaPreparada.setInt(8, planPersonalizado.getRecargoEntrenador());
+            }
+
+            sentenciaPreparada.setInt(9, planMembresia.getId());
+
+            return sentenciaPreparada.executeUpdate() > 0;
+        }
+    }
+
+    public boolean eliminarPlan(int idPlan) throws SQLException {
+        String sentenciaSql = "DELETE FROM planes_membresia WHERE id = ?";
+
+        try (Connection conexionBaseDatos = ConexionDB.obtenerConexion();
+             PreparedStatement sentenciaPreparada = conexionBaseDatos.prepareStatement(sentenciaSql)) {
+
+            sentenciaPreparada.setInt(1, idPlan);
+
+            return sentenciaPreparada.executeUpdate() > 0;
+        }
+    }
+}
