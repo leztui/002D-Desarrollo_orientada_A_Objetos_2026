@@ -1,0 +1,345 @@
+package com.hachimakidev.fitzone.view;
+
+import com.hachimakidev.fitzone.controller.PlanController;
+import com.hachimakidev.fitzone.model.PlanEstandar;
+import com.hachimakidev.fitzone.model.PlanMembresia;
+import com.hachimakidev.fitzone.model.PlanPersonalizado;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+
+public class PlanView {
+
+    private final PlanController planController = new PlanController();
+
+    private TableView<PlanMembresia> tablaPlanes;
+
+    private ComboBox<String> cmbTipo;
+    private TextField txtNombreCliente;
+    private TextField txtPrecioBase;
+    private TextField txtDuracionMeses;
+
+    private VBox panelEstandar;
+    private TextField txtClasesSemanales;
+    private CheckBox chkAccesoPiscina;
+
+    private VBox panelPersonalizado;
+    private TextField txtSesionesEntrenador;
+    private TextField txtRecargoEntrenador;
+
+    private Label lblEstado;
+
+    private int idSeleccionado = -1;
+
+    public PlanView() {
+    }
+
+    public Scene crearEscena() {
+        VBox panelFormulario = crearPanelFormulario();
+        VBox panelTabla = crearPanelTabla();
+
+        HBox.setHgrow(panelTabla, Priority.ALWAYS);
+
+        HBox raiz = new HBox(20, panelFormulario, panelTabla);
+        raiz.setPadding(new Insets(20));
+
+        cargarDatosEnTabla();
+
+        return new Scene(raiz, 1020, 560);
+    }
+
+    private VBox crearPanelFormulario() {
+        Label lblTitulo = new Label("FitZone — Planes de Membresía");
+        lblTitulo.setStyle("-fx-font-size: 17px; -fx-font-weight: bold;");
+
+        cmbTipo = new ComboBox<>();
+        cmbTipo.getItems().addAll("ESTANDAR", "PERSONALIZADO");
+        cmbTipo.setValue("ESTANDAR");
+        cmbTipo.setMaxWidth(Double.MAX_VALUE);
+
+        txtNombreCliente = new TextField();
+        txtNombreCliente.setPromptText("Ej: Camila Rojas");
+
+        txtPrecioBase = new TextField();
+        txtPrecioBase.setPromptText("Ej: 32000");
+
+        txtDuracionMeses = new TextField();
+        txtDuracionMeses.setPromptText("Ej: 6");
+
+        txtClasesSemanales = new TextField();
+        txtClasesSemanales.setPromptText("Ej: 4");
+
+        chkAccesoPiscina = new CheckBox("Incluye acceso a piscina (+$12.000)");
+
+        panelEstandar = new VBox(6,
+                new Label("Clases semanales:"), txtClasesSemanales,
+                chkAccesoPiscina
+        );
+
+        txtSesionesEntrenador = new TextField();
+        txtSesionesEntrenador.setPromptText("Ej: 8");
+
+        txtRecargoEntrenador = new TextField();
+        txtRecargoEntrenador.setPromptText("Ej: 25000");
+
+        panelPersonalizado = new VBox(6,
+                new Label("Sesiones con entrenador:"), txtSesionesEntrenador,
+                new Label("Recargo entrenador ($):"), txtRecargoEntrenador
+        );
+
+        actualizarVisibilidadTipo();
+        cmbTipo.setOnAction(evento -> actualizarVisibilidadTipo());
+
+        Button btnGuardar = new Button("Guardar");
+        Button btnActualizar = new Button("Actualizar");
+        Button btnEliminar = new Button("Eliminar");
+        Button btnLimpiar = new Button("Limpiar");
+
+        btnGuardar.setOnAction(evento -> accionGuardar());
+        btnActualizar.setOnAction(evento -> accionActualizar());
+        btnEliminar.setOnAction(evento -> accionEliminar());
+        btnLimpiar.setOnAction(evento -> limpiarFormulario());
+
+        HBox filaBotones = new HBox(8, btnGuardar, btnActualizar, btnEliminar, btnLimpiar);
+
+        lblEstado = new Label("Listo.");
+        lblEstado.setWrapText(true);
+
+        VBox panel = new VBox(8,
+                lblTitulo,
+                new Label("Tipo de plan:"), cmbTipo,
+                new Label("Nombre cliente:"), txtNombreCliente,
+                new Label("Precio base ($):"), txtPrecioBase,
+                new Label("Duración (meses):"), txtDuracionMeses,
+                panelEstandar,
+                panelPersonalizado,
+                filaBotones,
+                lblEstado
+        );
+        panel.setPrefWidth(330);
+        return panel;
+    }
+
+    private VBox crearPanelTabla() {
+        Label lblSubtitulo = new Label("Membresías Registradas en Oracle");
+        lblSubtitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        tablaPlanes = new TableView<>();
+
+        TableColumn<PlanMembresia, Integer> colId = new TableColumn<>("ID");
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colId.setPrefWidth(50);
+
+        TableColumn<PlanMembresia, String> colTipo = new TableColumn<>("Tipo");
+        colTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+        colTipo.setPrefWidth(115);
+
+        TableColumn<PlanMembresia, String> colCliente = new TableColumn<>("Cliente");
+        colCliente.setCellValueFactory(new PropertyValueFactory<>("nombreCliente"));
+        colCliente.setPrefWidth(150);
+
+        TableColumn<PlanMembresia, Integer> colDuracion = new TableColumn<>("Meses");
+        colDuracion.setCellValueFactory(new PropertyValueFactory<>("duracionMeses"));
+        colDuracion.setPrefWidth(65);
+
+        TableColumn<PlanMembresia, String> colDetalle = new TableColumn<>("Detalle");
+        colDetalle.setCellValueFactory(new PropertyValueFactory<>("detalle"));
+        colDetalle.setPrefWidth(210);
+
+        TableColumn<PlanMembresia, Integer> colPago = new TableColumn<>("Pago Mensual ($)");
+        colPago.setCellValueFactory(new PropertyValueFactory<>("pagoMensual"));
+        colPago.setPrefWidth(120);
+
+        tablaPlanes.getColumns().add(colId);
+        tablaPlanes.getColumns().add(colTipo);
+        tablaPlanes.getColumns().add(colCliente);
+        tablaPlanes.getColumns().add(colDuracion);
+        tablaPlanes.getColumns().add(colDetalle);
+        tablaPlanes.getColumns().add(colPago);
+
+        tablaPlanes.getSelectionModel().selectedItemProperty().addListener((observador, anterior, seleccionado) -> {
+            if (seleccionado != null) {
+                idSeleccionado = seleccionado.getId();
+                cmbTipo.setValue(seleccionado.getTipo());
+                actualizarVisibilidadTipo();
+
+                txtNombreCliente.setText(seleccionado.getNombreCliente());
+                txtPrecioBase.setText(String.valueOf(seleccionado.getPrecioBase()));
+                txtDuracionMeses.setText(String.valueOf(seleccionado.getDuracionMeses()));
+
+                if (seleccionado instanceof PlanEstandar estandar) {
+                    txtClasesSemanales.setText(String.valueOf(estandar.getClasesSemanales()));
+                    chkAccesoPiscina.setSelected(estandar.isAccesoPiscina());
+                    txtSesionesEntrenador.clear();
+                    txtRecargoEntrenador.clear();
+                } else if (seleccionado instanceof PlanPersonalizado personalizado) {
+                    txtSesionesEntrenador.setText(String.valueOf(personalizado.getSesionesEntrenador()));
+                    txtRecargoEntrenador.setText(String.valueOf(personalizado.getRecargoEntrenador()));
+                    txtClasesSemanales.clear();
+                    chkAccesoPiscina.setSelected(false);
+                }
+
+                lblEstado.setText("Editando plan ID #" + idSeleccionado);
+            }
+        });
+
+        VBox.setVgrow(tablaPlanes, Priority.ALWAYS);
+        return new VBox(10, lblSubtitulo, tablaPlanes);
+    }
+
+    private void actualizarVisibilidadTipo() {
+        boolean esEstandar = "ESTANDAR".equals(cmbTipo.getValue());
+        panelEstandar.setVisible(esEstandar);
+        panelEstandar.setManaged(esEstandar);
+        panelPersonalizado.setVisible(!esEstandar);
+        panelPersonalizado.setManaged(!esEstandar);
+    }
+
+    private PlanMembresia construirPlanDesdeFormulario(boolean incluirId) {
+        String tipoSeleccionado = cmbTipo.getValue();
+        String nombreCliente = txtNombreCliente.getText();
+        String precioBaseTexto = txtPrecioBase.getText();
+        String duracionMesesTexto = txtDuracionMeses.getText();
+
+        if (tipoSeleccionado == null || tipoSeleccionado.isBlank()) {
+            lblEstado.setText("Debes seleccionar un tipo de plan.");
+            return null;
+        }
+        if (nombreCliente == null || nombreCliente.trim().isEmpty()) {
+            lblEstado.setText("El nombre del cliente es obligatorio.");
+            return null;
+        }
+        if (precioBaseTexto == null || precioBaseTexto.trim().isEmpty()
+                || duracionMesesTexto == null || duracionMesesTexto.trim().isEmpty()) {
+            lblEstado.setText("El precio base y la duración son obligatorios.");
+            return null;
+        }
+
+        try {
+            int precioBase = Integer.parseInt(precioBaseTexto.trim());
+            int duracionMeses = Integer.parseInt(duracionMesesTexto.trim());
+            String nombreLimpio = nombreCliente.trim();
+
+            if ("ESTANDAR".equalsIgnoreCase(tipoSeleccionado)) {
+                String clasesTexto = txtClasesSemanales.getText();
+                if (clasesTexto == null || clasesTexto.trim().isEmpty()) {
+                    lblEstado.setText("Las clases semanales son obligatorias.");
+                    return null;
+                }
+                int clasesSemanales = Integer.parseInt(clasesTexto.trim());
+                boolean accesoPiscina = chkAccesoPiscina.isSelected();
+
+                if (incluirId) {
+                    return new PlanEstandar(idSeleccionado, nombreLimpio, precioBase, duracionMeses, clasesSemanales, accesoPiscina);
+                }
+                return new PlanEstandar(nombreLimpio, precioBase, duracionMeses, clasesSemanales, accesoPiscina);
+            } else {
+                String sesionesTexto = txtSesionesEntrenador.getText();
+                String recargoTexto = txtRecargoEntrenador.getText();
+                if (sesionesTexto == null || sesionesTexto.trim().isEmpty()
+                        || recargoTexto == null || recargoTexto.trim().isEmpty()) {
+                    lblEstado.setText("Las sesiones y el recargo del entrenador son obligatorios.");
+                    return null;
+                }
+                int sesionesEntrenador = Integer.parseInt(sesionesTexto.trim());
+                int recargoEntrenador = Integer.parseInt(recargoTexto.trim());
+
+                if (incluirId) {
+                    return new PlanPersonalizado(idSeleccionado, nombreLimpio, precioBase, duracionMeses, sesionesEntrenador, recargoEntrenador);
+                }
+                return new PlanPersonalizado(nombreLimpio, precioBase, duracionMeses, sesionesEntrenador, recargoEntrenador);
+            }
+        } catch (NumberFormatException excepcionNumero) {
+            lblEstado.setText("Error: ingresa solo números enteros válidos en los campos numéricos.");
+            return null;
+        }
+    }
+
+    private void accionGuardar() {
+        PlanMembresia nuevoPlan = construirPlanDesdeFormulario(false);
+        if (nuevoPlan == null) {
+            return;
+        }
+
+        String resultadoOperacion = planController.registrarPlan(nuevoPlan);
+        if ("OK".equals(resultadoOperacion)) {
+            limpiarFormulario();
+            cargarDatosEnTabla();
+            lblEstado.setText("Plan registrado correctamente en Oracle.");
+        } else {
+            lblEstado.setText(resultadoOperacion);
+        }
+    }
+
+    private void accionActualizar() {
+        if (idSeleccionado == -1) {
+            lblEstado.setText("Selecciona primero un plan en la tabla.");
+            return;
+        }
+
+        PlanMembresia planEditado = construirPlanDesdeFormulario(true);
+        if (planEditado == null) {
+            return;
+        }
+
+        String resultadoOperacion = planController.actualizarPlan(planEditado);
+        if ("OK".equals(resultadoOperacion)) {
+            limpiarFormulario();
+            cargarDatosEnTabla();
+            lblEstado.setText("Plan actualizado correctamente.");
+        } else {
+            lblEstado.setText(resultadoOperacion);
+        }
+    }
+
+    private void accionEliminar() {
+        if (idSeleccionado == -1) {
+            lblEstado.setText("Selecciona primero un plan en la tabla.");
+            return;
+        }
+
+        String resultadoOperacion = planController.eliminarPlan(idSeleccionado);
+        if ("OK".equals(resultadoOperacion)) {
+            limpiarFormulario();
+            cargarDatosEnTabla();
+            lblEstado.setText("Plan eliminado correctamente.");
+        } else {
+            lblEstado.setText(resultadoOperacion);
+        }
+    }
+
+    private void cargarDatosEnTabla() {
+        ObservableList<PlanMembresia> datosPlanes = FXCollections.observableArrayList(
+                planController.obtenerTodosLosPlanes()
+        );
+        tablaPlanes.setItems(datosPlanes);
+    }
+
+    private void limpiarFormulario() {
+        idSeleccionado = -1;
+        cmbTipo.setValue("ESTANDAR");
+        actualizarVisibilidadTipo();
+        txtNombreCliente.clear();
+        txtPrecioBase.clear();
+        txtDuracionMeses.clear();
+        txtClasesSemanales.clear();
+        chkAccesoPiscina.setSelected(false);
+        txtSesionesEntrenador.clear();
+        txtRecargoEntrenador.clear();
+        tablaPlanes.getSelectionModel().clearSelection();
+        lblEstado.setText("Formulario limpio.");
+    }
+}
